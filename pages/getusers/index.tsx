@@ -56,8 +56,8 @@ const People: NextPage = () => {
       </Button>
       {authState ? (
         <List>
-          {users.map((user) => (
-            <ListItem>
+          {users.map((user, key) => (
+            <ListItem key={key}>
               <Flex
                 borderColor={"indigo"}
                 borderWidth={2}
