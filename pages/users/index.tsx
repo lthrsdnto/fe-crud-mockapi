@@ -31,6 +31,8 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Users from "../../components/Users";
 import { User } from "../../types";
+import { selectAuthState } from "../../store/auth/authSelector";
+import { useSelector } from "react-redux";
 
 const Posts: NextPage = (
   props: InferGetServerSidePropsType<typeof getServerSideProps>
@@ -43,7 +45,7 @@ const Posts: NextPage = (
     setUsers(await resUsers.json());
   };
   const router = useRouter();
-
+  const authState = useSelector(selectAuthState);
   //modal
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -94,12 +96,7 @@ const Posts: NextPage = (
         <Divider />
         <List>
           {users.map((user) => (
-            <Users
-              name={user.name}
-              username={user.username}
-              key={user.id}
-              id={user.id}
-            />
+            <Users name={user.name} username={user.username} id={user.id} />
           ))}
         </List>
       </Box>
@@ -111,24 +108,12 @@ const Posts: NextPage = (
           <ModalHeader>Create User</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <form>
-              <VStack spacing={3}>
-                <Input
-                  placeholder="Name"
-                  {...register("name", {
-                    required: true,
-                    pattern: /[A-Za-z]{3}/,
-                    max: {
-                      value: 3,
-                      message: "error message",
-                    },
-                  })}
-                />
-                <InputGroup>
-                  <InputLeftAddon children={"@"} />
+            {authState ? (
+              <form>
+                <VStack spacing={3}>
                   <Input
-                    placeholder="Username"
-                    {...register("username", {
+                    placeholder="Name"
+                    {...register("name", {
                       required: true,
                       pattern: /[A-Za-z]{3}/,
                       max: {
@@ -137,14 +122,34 @@ const Posts: NextPage = (
                       },
                     })}
                   />
-                </InputGroup>
-              </VStack>
-            </form>
+                  <InputGroup>
+                    <InputLeftAddon children={"@"} />
+                    <Input
+                      placeholder="Username"
+                      {...register("username", {
+                        required: true,
+                        pattern: /[A-Za-z]{3}/,
+                        max: {
+                          value: 3,
+                          message: "error message",
+                        },
+                      })}
+                    />
+                  </InputGroup>
+                </VStack>
+              </form>
+            ) : (
+              <Text color={"red"}>
+                You must login first in order to create user.
+              </Text>
+            )}
           </ModalBody>
           <ModalFooter gap={2}>
-            <Button bg={"orange"} type="submit">
-              Submit
-            </Button>
+            {authState ? (
+              <Button bg={"orange"} type="submit">
+                Submit
+              </Button>
+            ) : null}
             <Button onClick={onClose}>Close</Button>
           </ModalFooter>
         </ModalContent>

@@ -22,6 +22,8 @@ import Router, { useRouter } from "next/router";
 import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { User } from "../types";
+import { selectAuthState } from "../store/auth/authSelector";
+import { useSelector } from "react-redux";
 
 const Users: React.FC<any> = ({ name, username, id }) => {
   const isUpdate = useDisclosure();
@@ -29,6 +31,7 @@ const Users: React.FC<any> = ({ name, username, id }) => {
   const updateForm = useForm<any>();
   const deleteForm = useForm<any>();
   const router = useRouter();
+  const authState = useSelector(selectAuthState);
 
   //update form handler
   const onUpdate: SubmitHandler<User> = async (data) => {
@@ -111,28 +114,16 @@ const Users: React.FC<any> = ({ name, username, id }) => {
             <ModalHeader>Update User</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <VStack spacing={3}>
-                <Input
-                  type="hidden"
-                  value={id}
-                  {...updateForm.register("id", { required: true })}
-                />
-                <Input
-                  placeholder={name}
-                  {...updateForm.register("name", {
-                    required: true,
-                    pattern: /[A-Za-z]{3}/,
-                    max: {
-                      value: 3,
-                      message: "error message",
-                    },
-                  })}
-                />
-                <InputGroup>
-                  <InputLeftAddon children={"@"} />
+              {authState ? (
+                <VStack spacing={3}>
                   <Input
-                    placeholder={username}
-                    {...updateForm.register("username", {
+                    type="hidden"
+                    value={id}
+                    {...updateForm.register("id", { required: true })}
+                  />
+                  <Input
+                    placeholder={name}
+                    {...updateForm.register("name", {
                       required: true,
                       pattern: /[A-Za-z]{3}/,
                       max: {
@@ -141,13 +132,33 @@ const Users: React.FC<any> = ({ name, username, id }) => {
                       },
                     })}
                   />
-                </InputGroup>
-              </VStack>
+                  <InputGroup>
+                    <InputLeftAddon children={"@"} />
+                    <Input
+                      placeholder={username}
+                      {...updateForm.register("username", {
+                        required: true,
+                        pattern: /[A-Za-z]{3}/,
+                        max: {
+                          value: 3,
+                          message: "error message",
+                        },
+                      })}
+                    />
+                  </InputGroup>
+                </VStack>
+              ) : (
+                <Text color={"red"}>
+                  You must login first in order to update user.
+                </Text>
+              )}
             </ModalBody>
             <ModalFooter gap={2}>
-              <Button bg={"orange"} type="submit">
-                Submit
-              </Button>
+              {authState ? (
+                <Button bg={"orange"} type="submit">
+                  Submit
+                </Button>
+              ) : null}
               <Button onClick={isUpdate.onClose}>Close</Button>
             </ModalFooter>
           </ModalContent>
@@ -160,19 +171,30 @@ const Users: React.FC<any> = ({ name, username, id }) => {
             as={"form"}
             onSubmit={deleteForm.handleSubmit(onDelete)}
           >
-            <ModalHeader color={"red"}>!!!</ModalHeader>
+            <ModalHeader color={"red"}>Delete User</ModalHeader>
             <ModalCloseButton />
+
             <ModalBody>
-              <VStack spacing={3}>
-                <Text>
-                  Delete <Badge colorScheme="red">"{name}"</Badge> in the list?
+              {authState ? (
+                <VStack spacing={3}>
+                  <Text>
+                    Delete <Badge colorScheme="red">"{name}"</Badge> in the
+                    list?
+                  </Text>
+                </VStack>
+              ) : (
+                <Text color={"red"}>
+                  You must login first in order to delete user.
                 </Text>
-              </VStack>
+              )}
             </ModalBody>
+
             <ModalFooter gap={2}>
-              <Button bg={"orange"} type="submit">
-                Confirm
-              </Button>
+              {authState ? (
+                <Button bg={"orange"} type="submit">
+                  Confirm
+                </Button>
+              ) : null}
               <Button onClick={isDelete.onClose}>Cancel</Button>
             </ModalFooter>
           </ModalContent>
